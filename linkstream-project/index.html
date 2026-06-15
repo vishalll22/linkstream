@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linkstream — Download any video, any quality</title>
+<meta name="description" content="Paste a video link, choose a quality, and download it. Free, fast, and works on your phone or desktop.">
+<meta name="theme-color" content="#6D5EF0">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!--
+  GOOGLE ADSENSE
+  After your AdSense account + this site are approved, uncomment the line
+  below and replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID.
+  See README.md for the full setup process and a policy note about
+  monetizing a download tool with AdSense.
+-->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
+<style>
+  :root{
+    --bg:#F7F8FB;
+    --surface:#FFFFFF;
+    --surface-2:#F1F2F8;
+    --border:#E4E6F0;
+    --text:#1B1E2B;
+    --muted:#6B7280;
+    --primary:#6D5EF0;
+    --primary-2:#9B8CFF;
+    --accent:#FF6B5B;
+    --success:#22C55E;
+    --radius:18px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Sora', sans-serif; font-weight:700; letter-spacing:-0.01em;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:var(--primary);}
+  .wrap{max-width:880px; margin:0 auto; padding:0 20px;}
+
+  /* ---- NAV ---- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(247,248,251,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+    padding:14px 0;
+  }
+  nav .wrap{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .logo{display:flex; align-items:center; gap:10px; font-family:'Sora'; font-weight:700; font-size:1.1rem;}
+  .logo .mark{
+    width:34px; height:34px; border-radius:10px;
+    background:linear-gradient(135deg, var(--primary), var(--primary-2));
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .logo .mark svg{width:18px; height:18px;}
+  .nav-links{display:flex; gap:20px; font-size:0.92rem;}
+  .nav-links a{color:var(--muted); text-decoration:none;}
+  .nav-links a:hover{color:var(--text);}
+  @media (max-width:560px){ .nav-links{display:none;} }
+
+  #installBtn{
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    border-radius:999px;
+    padding:8px 16px;
+    font-family:'Inter'; font-weight:600; font-size:0.85rem;
+    display:flex; align-items:center; gap:6px;
+    cursor:pointer;
+  }
+  #installBtn[hidden]{display:none;}
+  #installBtn:hover{border-color:var(--primary); color:var(--primary);}
+
+  /* ---- HERO ---- */
+  .hero{padding:56px 0 32px; text-align:center;}
+  .eyebrow{
+    display:inline-block;
+    font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--primary);
+    text-transform:uppercase; letter-spacing:0.14em;
+    background:rgba(109,94,240,0.08);
+    border:1px solid rgba(109,94,240,0.2);
+    border-radius:999px; padding:6px 14px;
+    margin-bottom:18px;
+  }
+  .hero h1{font-size:clamp(2.1rem, 5.5vw, 3.2rem); line-height:1.12; margin-bottom:14px;}
+  .hero h1 span{
+    background:linear-gradient(135deg, var(--primary), var(--primary-2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero p.lead{color:var(--muted); font-size:1.05rem; max-width:520px; margin:0 auto 36px;}
+
+  /* ---- DOWNLOAD CARD ---- */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:24px;
+    text-align:left;
+    box-shadow:0 20px 50px -30px rgba(27,30,43,0.25);
+  }
+  .input-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .input-row input[type=text]{
+    flex:1; min-width:200px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:15px 18px;
+    color:var(--text);
+    font-family:'Inter';
+    font-size:0.95rem;
+    outline:none;
+  }
+  .input-row input[type=text]:focus{border-color:var(--primary); background:var(--surface);}
+  .input-row input[type=text]::placeholder{color:#A0A4B8;}
+  .btn{
+    background:linear-gradient(135deg, var(--primary), var(--primary-2));
+    color:#fff;
+    border:none;
+    border-radius:14px;
+    padding:15px 26px;
+    font-family:'Sora'; font-weight:600; font-size:0.92rem;
+    cursor:pointer;
+    transition:transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 10px 24px -10px var(--primary);}
+  .btn:active{transform:translateY(0);}
+  .btn:disabled{opacity:0.6; cursor:default; transform:none; box-shadow:none;}
+  .btn.secondary{background:var(--surface-2); color:var(--text); border:1px solid var(--border); box-shadow:none;}
+  .btn.secondary:hover{border-color:var(--primary); color:var(--primary); box-shadow:none;}
+  .btn.full{width:100%;}
+
+  /* progress capsule */
+  .progress-track{
+    margin:22px 0 4px;
+    height:8px; border-radius:999px;
+    background:var(--surface-2);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; width:0%;
+    background:linear-gradient(135deg, var(--primary), var(--primary-2));
+    border-radius:999px;
+    transition:width 0.4s ease;
+  }
+  .progress-label{
+    font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--muted);
+    margin-top:8px; min-height:1.2em;
+  }
+
+  /* results */
+  .results{margin-top:22px; display:none;}
+  .results.show{display:block; animation:fadeUp 0.4s ease;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+  .result-head{display:flex; gap:14px; align-items:center; margin-bottom:18px;}
+  .result-thumb{
+    width:84px; height:84px; border-radius:14px; object-fit:cover; flex-shrink:0;
+    background:var(--surface-2);
+  }
+  .result-title{font-family:'Sora'; font-weight:600; font-size:1rem; line-height:1.35;}
+  .result-sub{color:var(--muted); font-size:0.85rem; margin-top:4px;}
+
+  .quality-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:10px; margin-bottom:18px;}
+  .q-option{
+    border:1.5px solid var(--border); border-radius:14px; padding:12px 14px;
+    cursor:pointer; transition:border-color 0.15s ease, background 0.15s ease;
+    background:var(--surface-2);
+  }
+  .q-option:hover{border-color:#C9CDE6;}
+  .q-option.selected{border-color:var(--primary); background:rgba(109,94,240,0.06);}
+  .q-option .res{font-family:'Sora'; font-weight:600; font-size:1rem;}
+  .q-option .meta{font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--muted); margin-top:4px;}
+
+  .status-note{font-size:0.88rem; color:var(--muted); margin-top:14px;}
+  .status-note.error{color:#D14343;}
+  .status-note strong{color:var(--text);}
+
+  /* ---- AD SLOTS ---- */
+  .ad-slot{
+    margin:36px auto;
+    max-width:880px;
+    text-align:center;
+  }
+  .ad-label{
+    display:block; font-family:'IBM Plex Mono'; font-size:0.65rem; color:#A0A4B8;
+    text-transform:uppercase; letter-spacing:0.14em; margin-bottom:8px;
+  }
+  .ad-slot ins.adsbygoogle{
+    display:block; min-height:90px;
+    background:var(--surface-2); border:1px dashed var(--border); border-radius:12px;
+  }
+
+  /* ---- SECTIONS ---- */
+  section{padding:48px 0;}
+  .section-head{margin-bottom:28px; text-align:center;}
+  .section-head h2{font-size:clamp(1.5rem, 4vw, 2rem);}
+  .section-head p{color:var(--muted); max-width:520px; margin:10px auto 0;}
+
+  /* how it works */
+  .steps{display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:18px;}
+  .step{
+    background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:22px;
+    text-align:center;
+  }
+  .step .num{
+    width:36px; height:36px; border-radius:10px; margin:0 auto 14px;
+    background:linear-gradient(135deg, var(--primary), var(--primary-2));
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-family:'Sora'; font-weight:700; font-size:0.95rem;
+  }
+  .step h3{font-size:1rem; margin-bottom:6px;}
+  .step p{color:var(--muted); font-size:0.88rem;}
+
+  /* sources */
+  .source-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;}
+  .source-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px;
+  }
+  .source-card h3{font-size:0.98rem; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .source-card h3 .tag{
+    font-family:'IBM Plex Mono'; font-size:0.62rem; color:var(--primary);
+    border:1px solid rgba(109,94,240,0.25); border-radius:999px; padding:2px 8px; text-transform:uppercase;
+  }
+  .source-card p{color:var(--muted); font-size:0.86rem;}
+
+  /* FAQ */
+  .faq-item{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    margin-bottom:10px; overflow:hidden;
+  }
+  .faq-q{
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    padding:18px 20px; font-family:'Sora'; font-weight:600; font-size:0.95rem; color:var(--text);
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+  }
+  .faq-q .chev{transition:transform 0.2s ease; color:var(--muted); flex-shrink:0;}
+  .faq-item.open .faq-q .chev{transform:rotate(180deg);}
+  .faq-a{
+    padding:0 20px; max-height:0; overflow:hidden; transition:max-height 0.25s ease, padding 0.25s ease;
+    color:var(--muted); font-size:0.9rem;
+  }
+  .faq-item.open .faq-a{padding:0 20px 18px; max-height:400px;}
+  .faq-a p{margin-bottom:8px;}
+  .faq-a ul{margin:8px 0 0 18px; display:flex; flex-direction:column; gap:6px;}
+
+  /* ---- AD INTERSTITIAL OVERLAY ---- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(27,30,43,0.55);
+    display:none; align-items:center; justify-content:center; z-index:200; padding:20px;
+  }
+  .overlay.show{display:flex;}
+  .overlay-card{
+    background:var(--surface); border-radius:20px; padding:24px;
+    max-width:420px; width:100%; text-align:center;
+  }
+  .overlay-card h3{font-size:1.05rem; margin-bottom:6px;}
+  .overlay-card p{color:var(--muted); font-size:0.88rem; margin-bottom:16px;}
+  .overlay .ad-slot{margin:0 0 16px;}
+
+  footer{padding:32px 0 48px; text-align:center; color:var(--muted); font-size:0.85rem;}
+  footer a{color:var(--muted); text-decoration:underline;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo">
+      <span class="mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      Linkstream
+    </div>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#sources">Supported sites</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <button id="installBtn" hidden>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0l-4-4m4 4l4-4M5 19h14"/></svg>
+      Install app
+    </button>
+  </div>
+</nav>
+
+<header class="hero wrap">
+  <div class="eyebrow">Free · No sign-up</div>
+  <h1>Download any video,<br>in <span>any quality</span>.</h1>
+  <p class="lead">Paste a link from your favorite site, pick the resolution you want, and save it straight to your device.</p>
+
+  <div class="card">
+    <div class="input-row">
+      <input type="text" id="urlInput" placeholder="Paste a video link here…" class="mono">
+      <button class="btn" id="analyzeBtn" onclick="analyze()">Get download links</button>
+    </div>
+
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel"></div>
+
+    <div class="results" id="results">
+      <div class="result-head">
+        <img class="result-thumb" id="resultThumb" alt="">
+        <div>
+          <div class="result-title" id="resultTitle"></div>
+          <div class="result-sub" id="resultSub"></div>
+        </div>
+      </div>
+      <div class="quality-grid" id="qualityGrid"></div>
+      <button class="btn full" id="downloadBtn" onclick="download()">Download selected</button>
+      <div class="status-note" id="statusNote"></div>
+    </div>
+  </div>
+</header>
+
+<div class="ad-slot">
+  <span class="ad-label">Advertisement</span>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+       data-ad-slot="XXXXXXXXXX"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+</div>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>How it works</h2>
+      <p>Three steps — no account, no app store required.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Copy the link</h3>
+        <p>Find the share or copy-link button on the video and copy its URL.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Paste &amp; choose</h3>
+        <p>Paste it above and pick the resolution or audio-only option you want.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Download</h3>
+        <p>Tap download — the file saves directly to your phone or computer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ad-slot">
+  <span class="ad-label">Advertisement</span>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+       data-ad-slot="XXXXXXXXXX"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+</div>
+
+<section id="sources">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Where it works</h2>
+      <p>Linkstream supports links from a wide range of sites. A few categories:</p>
+    </div>
+    <div class="source-grid">
+      <div class="source-card">
+        <h3>Video platforms <span class="tag">most common</span></h3>
+        <p>Long-form videos with multiple resolutions to choose from, up to 4K where available.</p>
+      </div>
+      <div class="source-card">
+        <h3>Short clips &amp; social <span class="tag">1-2 qualities</span></h3>
+        <p>Short videos from social apps — usually offered in one or two resolutions.</p>
+      </div>
+      <div class="source-card">
+        <h3>Audio &amp; music <span class="tag">audio only</span></h3>
+        <p>Tracks and podcasts come through as audio files at the best available bitrate.</p>
+      </div>
+      <div class="source-card">
+        <h3>Direct video files <span class="tag">simplest</span></h3>
+        <p>Links that point straight at a video file download instantly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Frequently asked questions</h2>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Is Linkstream free to use? <span class="chev">▾</span></button>
+      <div class="faq-a"><p>Yes — Linkstream is free and doesn't require an account. The site is supported by ads, which may appear between pages or briefly before a download starts.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">How do I install this as an app? <span class="chev">▾</span></button>
+      <div class="faq-a">
+        <p><strong>On Android / desktop Chrome:</strong> tap the "Install app" button in the top right. If you don't see it, open the browser menu and choose "Install app" or "Add to Home screen".</p>
+        <p><strong>On iPhone / iPad (Safari):</strong> tap the Share icon, then "Add to Home Screen".</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">What quality should I pick? <span class="chev">▾</span></button>
+      <div class="faq-a">
+        <p>Higher resolutions (1080p, 4K) look sharper but produce larger files and take longer to download. 720p is a good balance for most phones. Choose "Audio only" if you just want the sound — music or a podcast, for example.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Why didn't my link work? <span class="chev">▾</span></button>
+      <div class="faq-a">
+        <ul>
+          <li>The site may not be supported yet.</li>
+          <li>Private, login-only, or paid content can't be downloaded.</li>
+          <li>Live streams in progress sometimes can't be fetched until they end.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Is it okay to download this content? <span class="chev">▾</span></button>
+      <div class="faq-a">
+        <p>Only download videos you own, have permission to save, or that are shared under a license allowing it (such as Creative Commons). Downloading copyrighted content without permission may violate the platform's terms of service or copyright law in your country — that responsibility is yours as the person using this tool.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ad-slot">
+  <span class="ad-label">Advertisement</span>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+       data-ad-slot="XXXXXXXXXX"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+</div>
+
+<footer>
+  Linkstream — for personal use with content you have the rights to download.
+</footer>
+
+<!-- Interstitial ad shown while a download is being prepared -->
+<div class="overlay" id="adOverlay">
+  <div class="overlay-card">
+    <h3 id="overlayTitle">Preparing your download…</h3>
+    <p id="overlaySub">Your file will be ready in a few seconds.</p>
+    <div class="ad-slot">
+      <span class="ad-label">Advertisement</span>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="XXXXXXXXXX"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+    <button class="btn full" id="adContinueBtn" disabled onclick="continueDownload()">Download (5)</button>
+  </div>
+</div>
+
+<script>
+// Set this to wherever your backend (backend/main.py) is deployed.
+const API_BASE = "http://localhost:8000";
+
+let currentFormats = [];
+let selectedFormat = null;
+let currentUrl = '';
+let pendingDownloadUrl = null;
+
+function apiBase(){ return API_BASE.replace(/\/+$/, ''); }
+
+function setProgress(pct, label){
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = label || '';
+}
+
+async function analyze(){
+  const urlInput = document.getElementById('urlInput');
+  const url = urlInput.value.trim();
+  const btn = document.getElementById('analyzeBtn');
+  const note = document.getElementById('statusNote');
+
+  if(!url){ urlInput.focus(); return; }
+
+  currentUrl = url;
+  selectedFormat = null;
+  document.getElementById('results').classList.remove('show');
+  note.textContent = '';
+  note.classList.remove('error');
+
+  btn.disabled = true;
+  btn.textContent = 'Checking link…';
+  setProgress(25, 'Reading link…');
+
+  try{
+    setProgress(60, 'Looking up available qualities…');
+    const res = await fetch(`${apiBase()}/api/formats?url=${encodeURIComponent(url)}`);
+    if(!res.ok){
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Request failed (${res.status})`);
+    }
+    const data = await res.json();
+    currentFormats = data.formats || [];
+    setProgress(100, 'Done');
+    showResults(data);
+  }catch(e){
+    setProgress(0, '');
+    note.textContent = "Couldn't get that link: " + e.message;
+    note.classList.add('error');
+    document.getElementById('results').classList.remove('show');
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'Get download links';
+    setTimeout(() => setProgress(0, ''), 1200);
+  }
+}
+
+function showResults(data){
+  const thumb = document.getElementById('resultThumb');
+  if(data.thumbnail){
+    thumb.src = data.thumbnail;
+    thumb.style.display = '';
+  }else{
+    thumb.style.display = 'none';
+  }
+  document.getElementById('resultTitle').textContent = data.title || 'Untitled video';
+  document.getElementById('resultSub').textContent = data.uploader ? `By ${data.uploader}` : '';
+
+  const grid = document.getElementById('qualityGrid');
+  grid.innerHTML = '';
+
+  if(currentFormats.length === 0){
+    grid.innerHTML = '<div style="color:var(--muted); font-size:0.9rem;">No downloadable formats were found for this link.</div>';
+  }
+
+  currentFormats.forEach((f, i) => {
+    const card = document.createElement('div');
+    card.className = 'q-option' + (i === 0 ? ' selected' : '');
+    const kindLabel = f.kind === 'video-only' ? ' · video only' : '';
+    card.innerHTML = `<div class="res">${f.label}</div><div class="meta">${(f.ext || '').toUpperCase()}${kindLabel}${f.size ? ' · ' + f.size : ''}</div>`;
+    card.onclick = () => {
+      document.querySelectorAll('.q-option').forEach(el => el.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedFormat = f;
+    };
+    if(i === 0) selectedFormat = f;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('statusNote').textContent = '';
+  document.getElementById('statusNote').classList.remove('error');
+  document.getElementById('results').classList.add('show');
+}
+
+function download(){
+  const note = document.getElementById('statusNote');
+  if(!selectedFormat || !currentUrl){
+    note.textContent = 'Pick a quality first.';
+    note.classList.add('error');
+    return;
+  }
+  note.classList.remove('error');
+  note.textContent = '';
+
+  pendingDownloadUrl = `${apiBase()}/api/download?url=${encodeURIComponent(currentUrl)}&format_id=${encodeURIComponent(selectedFormat.format_id)}`;
+  showAdOverlay();
+}
+
+let adCountdownInterval = null;
+
+function showAdOverlay(){
+  const overlay = document.getElementById('adOverlay');
+  const btn = document.getElementById('adContinueBtn');
+  const title = document.getElementById('overlayTitle');
+  const sub = document.getElementById('overlaySub');
+
+  title.textContent = 'Preparing your download…';
+  sub.textContent = 'Your file will be ready in a few seconds.';
+  btn.disabled = true;
+
+  let seconds = 5;
+  btn.textContent = `Download (${seconds})`;
+  overlay.classList.add('show');
+
+  clearInterval(adCountdownInterval);
+  adCountdownInterval = setInterval(() => {
+    seconds--;
+    if(seconds <= 0){
+      clearInterval(adCountdownInterval);
+      title.textContent = 'Your download is ready';
+      sub.textContent = 'Tap below to save the file.';
+      btn.disabled = false;
+      btn.textContent = 'Download now';
+    }else{
+      btn.textContent = `Download (${seconds})`;
+    }
+  }, 1000);
+}
+
+function continueDownload(){
+  if(!pendingDownloadUrl) return;
+  document.getElementById('adOverlay').classList.remove('show');
+  window.location.href = pendingDownloadUrl;
+  pendingDownloadUrl = null;
+}
+
+function toggleFaq(btn){
+  const item = btn.closest('.faq-item');
+  item.classList.toggle('open');
+}
+
+/* ---- PWA install prompt ---- */
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('installBtn').hidden = false;
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById('installBtn').hidden = true;
+});
+
+/* ---- Service worker ---- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+/* ---- AdSense: render each ad slot if the script is loaded ---- */
+document.querySelectorAll('ins.adsbygoogle').forEach(() => {
+  try{ (window.adsbygoogle = window.adsbygoogle || []).push({}); }catch(e){}
+});
+</script>
+
+</body>
+</html>
