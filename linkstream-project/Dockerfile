@@ -1,13 +1,11 @@
 FROM python:3.12-slim
 
-# Install FFmpeg (required by yt-dlp to merge video + audio streams)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy from the backend/ subfolder into the container
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
