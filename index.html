@@ -701,7 +701,11 @@ async function analyze() {
     showResults(data);
   } catch (e) {
     setProgress(0, '');
-    note.textContent = "Extraction Error: " + e.message;
+    if (e.message.includes("confirm you") || e.message.includes("not a bot") || e.message.includes("cookies")) {
+      note.innerHTML = "⚠️ <strong>YouTube Cloud IP Restriction:</strong> YouTube actively blocks unauthenticated downloads from free cloud servers (like Render).<br>✨ <em>Try pasting a TikTok, Instagram, Twitter/X, Facebook, or Vimeo link above — they work instantly with zero restrictions!</em>";
+    } else {
+      note.textContent = "Extraction Error: " + e.message;
+    }
     note.classList.add('error');
     document.getElementById('results').classList.remove('show');
   } finally {
