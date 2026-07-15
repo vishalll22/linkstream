@@ -37,7 +37,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; max-width: 100%; }
   body {
     background: var(--bg);
     color: var(--text);
@@ -46,6 +46,10 @@
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
     position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   h1, h2, h3, h4, .logo {
@@ -56,24 +60,25 @@
   .mono { font-family: 'JetBrains Mono', monospace; }
   a { color: var(--accent); text-decoration: none; transition: color 0.2s ease; }
   a:hover { color: #fff; }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  .wrap { max-width: 1100px; width: 100%; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
 
   /* ---- AMBIENT BACKGROUND GLOWS ---- */
   .glow-orb {
     position: absolute;
-    width: 600px; height: 600px;
+    width: 400px; height: 400px;
+    max-width: 65vw; max-height: 65vw;
     border-radius: 50%;
-    filter: blur(140px);
+    filter: blur(130px);
     pointer-events: none;
     z-index: 0;
-    opacity: 0.18;
+    opacity: 0.15;
     animation: pulseOrb 12s ease-in-out infinite alternate;
   }
-  .glow-orb-1 { top: -150px; left: 10%; background: #6D5EF0; }
-  .glow-orb-2 { top: 400px; right: -100px; background: #00F5D4; animation-delay: -6s; }
+  .glow-orb-1 { top: -100px; left: -5%; background: #6D5EF0; }
+  .glow-orb-2 { top: 350px; right: -5%; background: #00F5D4; animation-delay: -6s; }
   @keyframes pulseOrb {
-    0% { transform: scale(1) translate(0, 0); opacity: 0.15; }
-    100% { transform: scale(1.15) translate(40px, 30px); opacity: 0.22; }
+    0% { transform: scale(1) translate(0, 0); opacity: 0.12; }
+    100% { transform: scale(1.1) translate(20px, 15px); opacity: 0.18; }
   }
 
   /* ---- NAVBAR ---- */
@@ -334,6 +339,29 @@
   /* ---- ADS CONFIG ---- */
   .ad-slot { margin: 30px auto; max-width: 860px; text-align: center; }
   .ad-label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: #64748B; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+
+  @media (max-width: 650px) {
+    .wrap { padding: 0 14px; }
+    nav .wrap { flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+    .logo { font-size: 1.1rem; }
+    .nav-actions { gap: 8px; }
+    .api-badge { padding: 3px 8px; font-size: 0.72rem; }
+    #installBtn { padding: 6px 12px; font-size: 0.78rem; }
+    .hero { padding: 40px 0 30px; }
+    .hero h1 { font-size: 1.95rem; line-height: 1.15; margin-bottom: 14px; }
+    .hero p.lead { font-size: 0.95rem; margin-bottom: 28px; }
+    .card { padding: 20px 14px; width: 100%; max-width: 100%; }
+    .input-row { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    .input-row input[type=text] { width: 100%; min-width: 0; padding: 15px 16px; font-size: 0.95rem; }
+    .btn { width: 100%; padding: 15px 20px; font-size: 0.95rem; }
+    .result-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .result-thumb { width: 100%; height: auto; max-height: 180px; }
+    .quality-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .q-option { padding: 10px; }
+    .q-option .res { font-size: 0.95rem; }
+    .q-option .meta { font-size: 0.65rem; }
+    .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+  }
 </style>
 </head>
 <body>
@@ -711,7 +739,7 @@ function download() {
   note.classList.remove('error');
   note.textContent = '';
 
-  pendingDownloadUrl = `${apiBase()}/api/download?url=${encodeURIComponent(currentUrl)}&format_id=${encodeURIComponent(selectedFormat.format_id)}`;
+  pendingDownloadUrl = `${apiBase()}/api/download?url=${encodeURIComponent(currentUrl)}&format_id=${encodeURIComponent(selectedFormat.format_id)}&kind=${encodeURIComponent(selectedFormat.kind || '')}`;
   showAdOverlay();
 }
 
